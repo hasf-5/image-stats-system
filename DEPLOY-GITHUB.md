@@ -44,6 +44,12 @@ git push -u origin main
 2. Note 随便写，Expiration 选 30 days，勾选 **repo** 权限
 3. 生成后复制 `ghp_...`，粘贴到 Git Bash 弹出的 password 处
 
+> 如果本机 SSH key 已经加到 GitHub（`ssh -T git@github.com` 能看到 `Hi 用户名!`），
+> 用 SSH 更省事，不用管 token。本机 22 端口不通时改走 443：
+> ```bash
+> git remote set-url origin ssh://git@ssh.github.com:443/hasf-5/image-stats-system.git
+> ```
+
 > 想免密：装 [GitHub CLI](https://cli.github.com/) 后执行 `gh auth login` 走浏览器授权，
 > 之后 `git push` 不再要求输入。
 
@@ -54,6 +60,12 @@ git push -u origin main
 - **Source** 选 **GitHub Actions**（不要选 "Deploy from a branch"）
 
 不需要填任何构建命令，仓库里的 `.github/workflows/deploy-pages.yml` 已经写好了。
+
+> **这一步必须手动点。** `GITHUB_TOKEN` 没有创建 Pages 站点的权限，
+> 所以工作流里的 `configure-pages` 无法代劳。如果跳过这步直接跑 Actions，
+> build 阶段会报 `Get Pages site failed. Error: Not Found` +
+> `Resource not accessible by integration` —— 看到这两句就是这个原因，不是代码问题。
+> 点完 Source 后，去 Actions 里 **Re-run all jobs**（或重新 push 一次）即可。
 
 ## 三、等自动部署
 
