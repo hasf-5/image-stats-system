@@ -171,6 +171,35 @@
         <p class="mt-6 text-center text-xs leading-5 text-slate-400">
           本系统不开放注册，账号由管理员在后台创建
         </p>
+
+        <!-- 在线演示提示：仅演示模式（静态托管）出现，不影响真实部署 -->
+        <div v-if="DEMO_MODE" class="mt-5 rounded-xl border border-brand-100 bg-brand-50/70 px-3.5 py-3 text-xs leading-5">
+          <div class="flex items-center justify-between gap-2">
+            <span class="font-semibold text-brand-700">在线演示</span>
+            <button type="button" class="text-[11px] text-slate-500 hover:text-brand-700 tap" @click="onResetDemo">
+              重置演示数据
+            </button>
+          </div>
+          <p class="mt-1 text-slate-500">数据保存在你本机的浏览器里，可随意增删改。</p>
+          <div class="mt-2 grid gap-1.5">
+            <button
+              type="button"
+              class="flex items-center justify-between gap-2 rounded-lg bg-white/80 border border-brand-100 px-2.5 py-1.5 text-left hover:border-brand-300 tap"
+              @click="fillDemo('admin', 'Admin@123456')"
+            >
+              <span class="text-slate-700">管理员 admin</span>
+              <span class="text-slate-400">Admin@123456</span>
+            </button>
+            <button
+              type="button"
+              class="flex items-center justify-between gap-2 rounded-lg bg-white/80 border border-brand-100 px-2.5 py-1.5 text-left hover:border-brand-300 tap"
+              @click="fillDemo('zhangwei', 'User@123456')"
+            >
+              <span class="text-slate-700">普通用户 zhangwei</span>
+              <span class="text-slate-400">User@123456</span>
+            </button>
+          </div>
+        </div>
       </div>
 
       <footer class="mt-10 md:mt-16 text-[11px] text-slate-400 pb-safe">
@@ -185,6 +214,7 @@ import { onMounted, reactive, ref } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { ElMessage, ElMessageBox, type FormInstance, type FormRules } from 'element-plus';
 import { useAuthStore } from '@/stores/auth';
+import { DEMO_MODE, resetDemo } from '@/demo';
 
 const router = useRouter();
 const route = useRoute();
@@ -220,6 +250,27 @@ function onForgot() {
     type: 'info',
     customClass: 'forgot-dialog',
   }).catch(() => void 0);
+}
+
+/* ---------------- 演示模式辅助（仅静态托管演示版可见） ---------------- */
+function fillDemo(username: string, password: string) {
+  form.username = username;
+  form.password = password;
+  errorMsg.value = '';
+}
+
+async function onResetDemo() {
+  const ok = await ElMessageBox.confirm('将清空你在演示环境中新增的数据，恢复为初始演示数据。', '重置演示数据', {
+    confirmButtonText: '重置',
+    cancelButtonText: '取消',
+    type: 'warning',
+  })
+    .then(() => true)
+    .catch(() => false);
+  if (!ok) return;
+  await resetDemo();
+  ElMessage.success('演示数据已重置');
+  setTimeout(() => location.reload(), 600);
 }
 
 async function onSubmit() {

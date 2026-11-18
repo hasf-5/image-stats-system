@@ -1,6 +1,8 @@
 import axios, { AxiosRequestConfig } from 'axios';
 import { ElMessage } from 'element-plus';
 import { clearSession, loadSession, patchAccessToken } from '@/utils/session';
+import { DEMO_MODE } from '@/demo';
+import { demoAdapter } from '@/demo/adapter';
 
 export class ApiError extends Error {
   code: number;
@@ -11,6 +13,9 @@ export class ApiError extends Error {
 }
 
 const service = axios.create({ baseURL: '/api', timeout: 30000 });
+
+// 演示模式（静态托管）下把请求交给浏览器内实现，业务代码零改动
+if (DEMO_MODE) service.defaults.adapter = demoAdapter as never;
 
 service.interceptors.request.use((config) => {
   const session = loadSession();
@@ -40,6 +45,11 @@ async function doRefresh(): Promise<string | null> {
 
 function redirectToLogin() {
   clearSession();
+  // 演示模式用 hash 路由（静态托管刷新不会 404），跳转方式也不同
+  if (DEMO_MODE) {
+    if (!location.hash.startsWith('#/login')) location.replace(`${location.pathname}${location.search}#/login`);
+    return;
+  }
   if (!location.pathname.startsWith('/login')) {
     const redirect = encodeURIComponent(location.pathname + location.search);
     location.replace(`/login?redirect=${redirect}`);

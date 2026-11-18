@@ -1,5 +1,6 @@
-import { createRouter, createWebHistory, type RouteRecordRaw } from 'vue-router';
+import { createRouter, createWebHashHistory, createWebHistory, type RouteRecordRaw } from 'vue-router';
 import { loadSession } from '@/utils/session';
+import { DEMO_MODE } from '@/demo';
 
 const routes: RouteRecordRaw[] = [
   {
@@ -78,7 +79,8 @@ const routes: RouteRecordRaw[] = [
 ];
 
 const router = createRouter({
-  history: createWebHistory(),
+  // 演示模式部署在 GitHub Pages 子路径下，hash 路由可避免刷新 404
+  history: DEMO_MODE ? createWebHashHistory() : createWebHistory(),
   routes,
   scrollBehavior: () => ({ top: 0 }),
 });

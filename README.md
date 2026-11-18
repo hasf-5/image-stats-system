@@ -9,6 +9,20 @@
 
 ---
 
+## 三种跑法，按需要选
+
+| 场景 | 做法 | 数据在哪 |
+| --- | --- | --- |
+| 本机快速看效果（无需 Docker/MySQL） | 双击 `start-local.cmd` | 便携 MariaDB（`~/.local/imgstats-db`） |
+| 上线给团队用 | `docker compose up` + Nginx + HTTPS | 服务器 MySQL |
+| **发布成 GitHub Pages 在线演示** | push 到 GitHub，Actions 自动构建 `--mode demo` | 访客自己浏览器的 IndexedDB |
+
+演示部署详见 **[DEPLOY-GITHUB.md](./DEPLOY-GITHUB.md)**。演示模式（`web/src/demo/`）
+用一个 axios adapter 在浏览器里复刻了全部接口，业务代码零改动，
+所以页面、交互、统计口径与真后端完全一致；代价是数据不共享、不落服务器。
+
+---
+
 ## 目录结构
 
 ```
@@ -30,6 +44,7 @@ image-stats-system/
 ├── web/                        # Vue 3 SPA
 │   ├── src/
 │   │   ├── components/         # ResponsiveTable / ResponsiveModal / ChartBox ...
+│   │   ├── demo/               # 演示模式：浏览器端数据层（IndexedDB + axios adapter）
 │   │   ├── layouts/            # UserLayout / AdminLayout（双端导航）
 │   │   ├── views/              # 登录、用户端、后台端
 │   │   ├── api/                # axios 封装 + 各域接口
@@ -40,6 +55,8 @@ image-stats-system/
 ├── deploy/nginx/               # HTTPS 与首次签发（HTTP）两套模板
 ├── scripts/db-local.sh         # 无 Docker 时的便携 MariaDB 管理脚本
 ├── start-local.cmd             # Windows 双击一键预览（起库 + 前后端）
+├── .github/workflows/          # GitHub Pages 自动部署（build:demo）
+├── DEPLOY-GITHUB.md            # 发布在线演示站的分步说明
 ├── docker-compose.yml
 ├── docker-compose.http.yml     # 首次申请证书时叠加使用
 └── .env.example
