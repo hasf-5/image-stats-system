@@ -38,7 +38,11 @@ jobs:
       - name: 构建演示版
         run: npm run build:demo
 
+      # enablement: true —— 仓库还没开 Pages 时自动用 GITHUB_TOKEN 打开，
+      # 省掉一次「先去 Settings 点 GitHub Actions」的手动操作。
       - uses: actions/configure-pages@v5
+        with:
+          enablement: true
 
       - uses: actions/upload-pages-artifact@v3
         with:
