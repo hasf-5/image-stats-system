@@ -25,6 +25,7 @@
       :data="list"
       :loading="loading"
       :total="total"
+      :actions-width="96"
       empty-text="还没有提交记录，去上传第一张图片吧"
     >
       <!-- PC 缩略图 -->
@@ -47,7 +48,7 @@
           preview-teleported
           hide-on-click-modal
           fit="cover"
-          class="w-full h-40 rounded-lg bg-slate-100"
+          class="w-full h-32 rounded-lg bg-slate-100"
         />
       </template>
 
@@ -152,8 +153,8 @@ const columns = computed<TableColumn[]>(() => [
     slot: isMobile.value ? 'thumbMobile' : 'thumb',
   },
   { key: 'category', label: '分类', width: 110, primary: true, slot: 'category' },
-  { key: 'remark', label: '备注', minWidth: 200, slot: 'remark' },
-  { key: 'submitTime', label: '提交时间', width: 150, slot: 'submitTime' },
+  { key: 'remark', label: '备注', minWidth: 140, slot: 'remark' },
+  { key: 'submitTime', label: '提交时间', width: 172, slot: 'submitTime' },
   { key: 'fileSize', label: '大小', width: 90, slot: 'fileSize' },
   { key: 'status', label: '状态', width: 90, slot: 'status' },
 ]);

@@ -2,8 +2,9 @@
  * 初始化脚本：默认管理员 + 基础分类 (+ 可选演示数据)
  * 用法：
  *   npm run seed            # 只建管理员与分类
- *   SEED_DEMO=true npm run seed   # 额外生成 30 天演示记录，便于验收看板
+ *   SEED_DEMO=true npm run seed   # 额外生成 60 天演示记录，便于验收看板（含上期对比）
  */
+import 'dotenv/config';
 import { PrismaClient } from '@prisma/client';
 import * as bcrypt from 'bcryptjs';
 import { createHash } from 'crypto';
@@ -148,33 +149,40 @@ async function main() {
 
       const rows: any[] = [];
       const now = new Date();
-      for (let d = 29; d >= 0; d--) {
+      // 各分类的基础日均量：让趋势线有梯度、有周末低谷，接近真实使用曲线
+      const catBase = [18, 13, 9, 6];
+      for (let d = 59; d >= 0; d--) {
         const day = new Date(now.getTime() - d * 86400_000);
         const dow = day.getDay();
-        const base = dow === 0 || dow === 6 ? 1 : 3;
-        const count = base + Math.floor(Math.random() * 4);
-        for (let k = 0; k < count; k++) {
-          const u = users[Math.floor(Math.random() * users.length)];
-          const c = categories[Math.floor(Math.random() * categories.length)];
-          const file = files[Math.floor(Math.random() * files.length)];
-          const ts = new Date(day);
-          ts.setHours(8 + Math.floor(Math.random() * 11), Math.floor(Math.random() * 60), 0, 0);
-          const isVoid = Math.random() < 0.08;
-          rows.push({
-            userId: u.id,
-            categoryId: c.id,
-            fileUrl: `/uploads/${file}`,
-            fileSize: 4096 + Math.floor(Math.random() * 20000),
-            fileHash: createHash('sha256').update(`${file}-${ts.getTime()}`).digest('hex'),
-            remark: Math.random() < 0.35 ? '演示数据' : null,
-            status: isVoid ? 'void' : 'normal',
-            submitTime: ts,
-            clientType: Math.random() < 0.6 ? 'mobile' : 'pc',
-            voidBy: isVoid ? admin.id : null,
-            voidTime: isVoid ? new Date(ts.getTime() + 3600_000) : null,
-            voidReason: isVoid ? '演示：重复上传' : null,
-          });
-        }
+        const weekend = dow === 0 || dow === 6 ? 0.45 : 1;
+        const growth = 0.7 + 0.6 * ((59 - d) / 59); // 越近的日期提交量越高
+
+        categories.forEach((c, ci) => {
+          const avg = (catBase[ci % catBase.length] ?? 1) * growth * weekend;
+          const noise = (Math.random() - 0.5) * Math.max(1, avg * 0.22);
+          const count = Math.max(0, Math.round(avg + noise));
+          for (let k = 0; k < count; k++) {
+            const u = users[Math.floor(Math.random() * users.length)];
+            const file = files[Math.floor(Math.random() * files.length)];
+            const ts = new Date(day);
+            ts.setHours(8 + Math.floor(Math.random() * 11), Math.floor(Math.random() * 60), 0, 0);
+            const isVoid = Math.random() < 0.06;
+            rows.push({
+              userId: u.id,
+              categoryId: c.id,
+              fileUrl: `/uploads/${file}`,
+              fileSize: 4096 + Math.floor(Math.random() * 20000),
+              fileHash: createHash('sha256').update(`${file}-${ts.getTime()}-${k}`).digest('hex'),
+              remark: Math.random() < 0.35 ? '演示数据' : null,
+              status: isVoid ? 'void' : 'normal',
+              submitTime: ts,
+              clientType: Math.random() < 0.6 ? 'mobile' : 'pc',
+              voidBy: isVoid ? admin.id : null,
+              voidTime: isVoid ? new Date(ts.getTime() + 3600_000) : null,
+              voidReason: isVoid ? '演示：重复上传' : null,
+            });
+          }
+        });
       }
       await prisma.imageRecord.createMany({ data: rows });
       console.log(`✓ 演示记录 ${rows.length} 条`);

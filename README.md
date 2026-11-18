@@ -38,6 +38,8 @@ image-stats-system/
 │   ├── public/                 # manifest / sw.js / PWA 图标
 │   └── Dockerfile
 ├── deploy/nginx/               # HTTPS 与首次签发（HTTP）两套模板
+├── scripts/db-local.sh         # 无 Docker 时的便携 MariaDB 管理脚本
+├── start-local.cmd             # Windows 双击一键预览（起库 + 前后端）
 ├── docker-compose.yml
 ├── docker-compose.http.yml     # 首次申请证书时叠加使用
 └── .env.example
@@ -46,6 +48,40 @@ image-stats-system/
 ---
 
 ## 一、本地开发
+
+### 0. 一键预览（推荐：本机没装 Docker / MySQL 时）
+
+仓库里带了一套「便携数据库」方案：把 MariaDB 解压到用户目录跑在 **3307** 端口，
+不写注册表、不装系统服务，删掉目录即彻底清理。
+
+**Windows 用户直接双击根目录的 `start-local.cmd`**，它会依次完成：
+
+1. 启动便携 MariaDB（首次自动解压 + 初始化 + 建库建账号 + 生成 `server/.env`）
+2. 在独立窗口启动后端 API（:3000）与前端（:5173）
+3. 自动打开浏览器 http://localhost:5173
+
+也可以手动分步执行：
+
+```bash
+bash scripts/db-local.sh start    # 起库（首次会初始化，约 1 分钟）
+bash scripts/db-local.sh status   # 查看状态
+bash scripts/db-local.sh stop     # 停止
+
+cd server && npx prisma db push && SEED_DEMO=true npm run seed && npm run start
+cd web && npm run dev
+```
+
+默认账号（`SEED_DEMO=true` 会额外生成 60 天演示数据 + 3 个普通用户）：
+
+| 角色 | 账号 | 密码 |
+| --- | --- | --- |
+| 管理员 | admin | Admin@123456 |
+| 普通用户 | zhangwei / lina / wangqiang | User@123456 |
+
+手机访问同一 WiFi 下的 `http://本机IP:5173` 即可（Vite 已开启 `host: true`）。
+
+> 便携库只用于本地预览：`scripts/db-local.sh` 里的 root 密码是明文的，
+> 数据目录在 `~/.local/imgstats-db`，**不要**把它当作生产数据库使用。
 
 ### 1. 依赖
 

@@ -31,6 +31,7 @@
       :data="list"
       :loading="loading"
       :total="total"
+      :actions-width="150"
       empty-text="没有符合条件的记录"
     >
       <template #thumb="{ row }">
@@ -51,7 +52,7 @@
           preview-teleported
           hide-on-click-modal
           fit="cover"
-          class="w-full h-40 rounded-lg bg-slate-100"
+          class="w-full h-32 rounded-lg bg-slate-100"
         />
       </template>
 
@@ -172,7 +173,7 @@ const columns = computed<TableColumn[]>(() => [
   },
   { key: 'submitter', label: '提交人', width: 130, primary: true, slot: 'submitter' },
   { key: 'category', label: '分类', width: 100, slot: 'category' },
-  { key: 'remark', label: '备注', minWidth: 200, slot: 'remark' },
+  { key: 'remark', label: '备注', minWidth: 160, slot: 'remark' },
   { key: 'submitTime', label: '提交时间', width: 145, slot: 'submitTime' },
   { key: 'fileSize', label: '大小', width: 80, slot: 'fileSize' },
   { key: 'status', label: '状态', width: 88, slot: 'status' },
