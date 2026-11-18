@@ -33,8 +33,7 @@ GitHub Pages 只能托管**静态文件**（HTML/JS/CSS），跑不了 NestJS �
 然后在项目根目录（`image-stats-system/`）打开 Git Bash 执行：
 
 ```bash
-# 把 <你的用户名> 换成你的 GitHub 用户名
-git remote add origin https://github.com/<你的用户名>/image-stats-system.git
+git remote add origin https://github.com/hasf-5/image-stats-system.git
 git branch -M main
 git push -u origin main
 ```
@@ -66,7 +65,7 @@ git push -u origin main
 两个都变绿后，地址是：
 
 ```
-https://<你的用户名>.github.io/image-stats-system/
+https://hasf-5.github.io/image-stats-system/
 ```
 
 （在 Actions 的 deploy 步骤里也能直接点到 `page_url`）
