@@ -1,0 +1,10 @@
+# 依赖与构建产物
+node_modules/
+dist/
+uploads/
+*.log
+.env
+.env.local
+.DS_Store
+coverage/
+.tsbuildinfo

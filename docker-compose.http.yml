@@ -1,0 +1,10 @@
+# 首次申请证书时使用：只开 80 端口 + HTTP 配置（不做 443 跳转）
+# 用法：docker compose -f docker-compose.yml -f docker-compose.http.yml up -d
+services:
+  web:
+    ports:
+      - "80:80"
+    volumes:
+      - ./deploy/nginx/http-only.conf.template:/etc/nginx/templates/default.conf.template:ro
+      - uploads:/var/www/uploads:ro
+      - ./deploy/certbot/www:/var/www/certbot:ro

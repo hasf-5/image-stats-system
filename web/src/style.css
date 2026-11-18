@@ -1,0 +1,140 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --brand: #4560f0;
+  --brand-dark: #2b37b8;
+  --page-bg: #f6f7fb;
+  --safe-bottom: env(safe-area-inset-bottom, 0px);
+  --safe-top: env(safe-area-inset-top, 0px);
+
+  /* Element Plus 主题对齐品牌色 */
+  --el-color-primary: #4560f0;
+  --el-color-primary-light-3: #7d8cf5;
+  --el-color-primary-light-5: #a3aef8;
+  --el-color-primary-light-7: #c8cffb;
+  --el-color-primary-light-8: #dbe0fc;
+  --el-color-primary-light-9: #eef1fe;
+  --el-color-primary-dark-2: #3344dd;
+  --el-border-radius-base: 8px;
+  --el-font-size-base: 14px;
+}
+
+html,
+body,
+#app {
+  height: 100%;
+}
+
+body {
+  margin: 0;
+  background: var(--page-bg);
+  color: #0f172a;
+  -webkit-font-smoothing: antialiased;
+  -webkit-tap-highlight-color: transparent;
+  overscroll-behavior-y: none;
+}
+
+#boot {
+  display: none !important;
+}
+
+/* 移动端键盘弹出/地址栏收缩时，用动态视口高度 */
+.min-h-screen-dvh {
+  min-height: 100dvh;
+}
+.h-screen-dvh {
+  height: 100dvh;
+}
+
+/* 安全区 */
+.pb-safe {
+  padding-bottom: var(--safe-bottom);
+}
+.pt-safe {
+  padding-top: var(--safe-top);
+}
+.mb-safe {
+  margin-bottom: var(--safe-bottom);
+}
+
+@layer components {
+  .card {
+    @apply bg-white rounded-xl shadow-card border border-slate-100;
+  }
+  .card-pad {
+    @apply p-4 md:p-6;
+  }
+  .page-title {
+    @apply text-lg md:text-xl font-semibold text-slate-900;
+  }
+  .muted {
+    @apply text-slate-500 text-sm;
+  }
+  .tap {
+    @apply active:scale-[.98] transition-transform duration-100;
+  }
+  /* 移动端吸底操作条 */
+  .sticky-action {
+    @apply sticky bottom-0 z-20 -mx-4 px-4 pt-3 pb-3 md:static md:mx-0 md:px-0;
+    padding-bottom: calc(0.75rem + var(--safe-bottom));
+    background: linear-gradient(180deg, rgba(246, 247, 251, 0) 0%, #f6f7fb 38%);
+  }
+}
+
+/* 滚动条（桌面端） */
+@media (min-width: 769px) {
+  ::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+  }
+  ::-webkit-scrollbar-thumb {
+    background: #cbd5e1;
+    border-radius: 8px;
+  }
+  ::-webkit-scrollbar-track {
+    background: transparent;
+  }
+}
+
+/* Element Plus 与 Tailwind preflight 的兼容修正 */
+.el-button {
+  font-weight: 500;
+}
+.el-table {
+  --el-table-border-color: #eef1f6;
+  --el-table-header-bg-color: #f8fafc;
+  --el-table-header-text-color: #475569;
+}
+.el-table th.el-table__cell {
+  font-weight: 600;
+}
+.el-dialog {
+  border-radius: 14px;
+  overflow: hidden;
+}
+.el-drawer__header {
+  margin-bottom: 0;
+  padding: 16px 20px;
+  border-bottom: 1px solid #eef1f6;
+  font-weight: 600;
+  color: #0f172a;
+}
+.el-drawer__body {
+  padding: 16px 20px;
+}
+.el-form-item__label {
+  font-weight: 500;
+  color: #334155;
+}
+
+/* 图片预览遮罩 */
+.img-mask {
+  background: linear-gradient(180deg, rgba(15, 23, 42, 0) 45%, rgba(15, 23, 42, 0.72) 100%);
+}
+
+/* 数字等宽，表格里更整齐 */
+.tabular {
+  font-variant-numeric: tabular-nums;
+}

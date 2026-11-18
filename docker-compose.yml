@@ -1,0 +1,95 @@
+name: image-stats
+
+services:
+  mysql:
+    image: mysql:8.0
+    container_name: imgstats-mysql
+    restart: unless-stopped
+    command:
+      - --character-set-server=utf8mb4
+      - --collation-server=utf8mb4_unicode_ci
+      # 数据库统一存 UTC，业务层按 Asia/Shanghai 转换
+      - --default-time-zone=+00:00
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+      MYSQL_DATABASE: imgstats
+      MYSQL_USER: imgstats
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD}
+      TZ: Asia/Shanghai
+    volumes:
+      - mysql_data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD-SHELL", "mysqladmin ping -h 127.0.0.1 -uroot -p$$MYSQL_ROOT_PASSWORD --silent"]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+      start_period: 40s
+
+  redis:
+    image: redis:7-alpine
+    container_name: imgstats-redis
+    restart: unless-stopped
+    command: ["redis-server", "--appendonly", "yes"]
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 3s
+      retries: 6
+
+  server:
+    build:
+      context: ./server
+    container_name: imgstats-api
+    restart: unless-stopped
+    env_file:
+      - .env
+    environment:
+      NODE_ENV: production
+      PORT: 3000
+      # 容器内走服务名，覆盖 .env 里的本地地址
+      DATABASE_URL: "mysql://imgstats:${MYSQL_PASSWORD}@mysql:3306/imgstats?connection_limit=10&pool_timeout=20"
+      REDIS_URL: redis://redis:6379/0
+      UPLOAD_DIR: /app/uploads
+      # 首次启动自动建表；表结构稳定后可改成 false
+      RUN_DB_PUSH: "true"
+    volumes:
+      - uploads:/app/uploads
+    depends_on:
+      mysql:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+
+  web:
+    build:
+      context: ./web
+    container_name: imgstats-web
+    restart: unless-stopped
+    environment:
+      DOMAIN: ${DOMAIN}
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./deploy/nginx/default.conf.template:/etc/nginx/templates/default.conf.template:ro
+      - uploads:/var/www/uploads:ro
+      - certs:/etc/letsencrypt:ro
+      - ./deploy/certbot/www:/var/www/certbot:ro
+    depends_on:
+      - server
+
+  # 证书签发/续期（按需运行，不常驻）
+  certbot:
+    image: certbot/certbot:latest
+    profiles: ["certbot"]
+    volumes:
+      - certs:/etc/letsencrypt
+      - ./deploy/certbot/www:/var/www/certbot
+
+volumes:
+  mysql_data:
+  redis_data:
+  uploads:
+  certs:

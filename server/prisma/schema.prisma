@@ -1,0 +1,114 @@
+// Prisma schema —— 图片提交与统计管理系统
+// 数据库：MySQL 8。所有 DateTime 以 UTC 落库，展示层统一按 Asia/Shanghai 转换。
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  admin
+  user
+}
+
+enum UserStatus {
+  active
+  disabled
+}
+
+enum CategoryStatus {
+  active
+  disabled
+}
+
+enum RecordStatus {
+  normal
+  void
+}
+
+model User {
+  id            Int        @id @default(autoincrement())
+  username      String     @unique @db.VarChar(50)
+  passwordHash  String     @map("password_hash") @db.VarChar(100)
+  role          Role       @default(user)
+  nickname      String?    @db.VarChar(50)
+  status        UserStatus @default(active)
+  mustChangePwd Boolean    @default(false) @map("must_change_pwd")
+  createdAt     DateTime   @default(now()) @map("created_at")
+  createdBy     Int?       @map("created_by")
+
+  images       ImageRecord[]  @relation("UserImages")
+  voidedImages ImageRecord[]  @relation("VoidedBy")
+  auditLogs    AuditLog[]
+
+  @@index([role, status])
+  @@map("user")
+}
+
+model Category {
+  id        Int            @id @default(autoincrement())
+  name      String         @unique @db.VarChar(50)
+  sort      Int            @default(0)
+  status    CategoryStatus @default(active)
+  createdAt DateTime       @default(now()) @map("created_at")
+
+  images ImageRecord[]
+
+  @@map("category")
+}
+
+model ImageRecord {
+  id          Int          @id @default(autoincrement())
+  userId      Int          @map("user_id")
+  categoryId  Int          @map("category_id")
+  fileUrl     String       @map("file_url") @db.VarChar(255)
+  fileSize    Int          @map("file_size")
+  fileHash    String       @map("file_hash") @db.VarChar(64)
+  remark      String?      @db.VarChar(255)
+  status      RecordStatus @default(normal)
+  submitTime  DateTime     @default(now()) @map("submit_time")
+  voidBy      Int?         @map("void_by")
+  voidTime    DateTime?    @map("void_time")
+  voidReason  String?      @map("void_reason") @db.VarChar(255)
+  clientType  String?      @map("client_type") @db.VarChar(10)
+
+  user     User      @relation("UserImages", fields: [userId], references: [id])
+  category Category  @relation(fields: [categoryId], references: [id])
+  voider   User?     @relation("VoidedBy", fields: [voidBy], references: [id])
+
+  @@index([categoryId, submitTime], map: "idx_cat_time")
+  @@index([submitTime], map: "idx_time")
+  @@index([userId, submitTime], map: "idx_user_time")
+  @@index([status, submitTime], map: "idx_status_time")
+  @@map("image_record")
+}
+
+model ReportConfig {
+  id         Int      @id @default(autoincrement())
+  name       String   @db.VarChar(80)
+  granularity String  @default("day") @db.VarChar(10)
+  groupBy    String   @default("category") @map("group_by") @db.VarChar(20)
+  dateStart  String?  @map("date_start") @db.VarChar(10)
+  dateEnd    String?  @map("date_end") @db.VarChar(10)
+  createdBy  Int?     @map("created_by")
+  createdAt  DateTime @default(now()) @map("created_at")
+
+  @@map("report_config")
+}
+
+model AuditLog {
+  id        Int      @id @default(autoincrement())
+  userId    Int?     @map("user_id")
+  action    String   @db.VarChar(50)
+  targetId  String?  @map("target_id") @db.VarChar(64)
+  ip        String?  @db.VarChar(64)
+  createdAt DateTime @default(now()) @map("created_at")
+
+  user User? @relation(fields: [userId], references: [id])
+
+  @@index([createdAt])
+  @@map("audit_log")
+}
