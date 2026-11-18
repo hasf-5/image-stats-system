@@ -1,5 +1,8 @@
 # 图片提交与统计管理系统
 
+> **在线演示**：https://hasf-5.github.io/image-stats-system/
+> 管理员 `admin` / `Admin@123456`，普通用户 `zhangwei` / `User@123456`（数据存在各自浏览器里，可随时重置）
+
 内部使用的图片提交与统计分析系统：普通用户手机/电脑上传图片并归类，管理员在后台管理账号、查看记录、按天/周/月查看统计。**不对外开放注册**，账号只能由管理员创建。
 
 - 前端：Vue 3 + Vite + TypeScript + Tailwind CSS + Element Plus + ECharts + Pinia + Vue Router + Axios
